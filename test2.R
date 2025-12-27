@@ -136,102 +136,102 @@ server <- function(input, output, session) {
     
     page %>%
       html_node("section#block-system-main table.table-striped") %>%
-      html_table(fill = TRUE)
-  }
-  
-  brvm_data <- reactiveVal(get_brvm_data())
-  
-  observeEvent(input$refresh, {
-    brvm_data(get_brvm_data())
-    extraction_time(Sys.time())
-  })
-  
-  # ---------- Nettoyage ----------
-  data_clean <- reactive({
-    df <- brvm_data()
-    df$`Variation (%)` <- as.numeric(
-      gsub(",", ".", gsub("%", "", df$`Variation (%)`))
-    )
-    df
-  })
-  
-  # ---------- TABLEAUX ----------
-  output$table_all <- renderDT({
-    datatable(data_clean(), options = list(pageLength = 15, scrollX = TRUE))
-  })
-  
-  output$table_up <- renderDT({
-    datatable(
-      data_clean()[order(-data_clean()$`Variation (%)`), ][1:10, ],
-      options = list(pageLength = 10)
-    )
-  })
-  
-  output$table_down <- renderDT({
-    datatable(
-      data_clean()[order(data_clean()$`Variation (%)`), ][1:10, ],
-      options = list(pageLength = 10)
-    )
-  })
-  
-  # ---------- GRAPHIQUES ----------
-  output$plot_variation <- renderPlot({
-    df <- data_clean()
-    barplot(
-      df$`Variation (%)`,
-      names.arg = df$Libellé,
-      las = 2,
-      col = "steelblue",
-      main = "Variation journalière des actions (%)",
-      ylab = "Variation (%)",
-      cex.names = 0.6
-    )
-  })
-  
-  output$plot_top_up <- renderPlot({
-    df <- data_clean()[order(-data_clean()$`Variation (%)`), ][1:10, ]
-    barplot(
-      df$`Variation (%)`,
-      names.arg = df$Libellé,
-      col = "darkgreen",
-      las = 2,
-      main = "Top 10 hausses (%)",
-      ylab = "Variation (%)"
-    )
-  })
-  
-  output$plot_top_down <- renderPlot({
-    df <- data_clean()[order(data_clean()$`Variation (%)`), ][1:10, ]
-    barplot(
-      df$`Variation (%)`,
-      names.arg = df$Libellé,
-      col = "firebrick",
-      las = 2,
-      main = "Top 10 baisses (%)",
-      ylab = "Variation (%)"
-    )
-  })
-  
-  output$plot_hist <- renderPlot({
-    hist(
-      data_clean()$`Variation (%)`,
-      breaks = 20,
-      col = "gray70",
-      border = "white",
-      main = "Distribution des variations journalières",
-      xlab = "Variation (%)"
-    )
-  })
-  
-  # ---------- Téléchargement ----------
-  output$downloadData <- downloadHandler(
-    filename = function() {
-      paste0("BRVM_actions_", Sys.Date(), ".csv")
-    },
-    content = function(file) {
-      write.csv(data_clean(), file, row.names = FALSE)
-    }
+               html_table(fill = TRUE)
+               }
+
+brvm_data <- reactiveVal(get_brvm_data())
+
+observeEvent(input$refresh, {
+  brvm_data(get_brvm_data())
+  extraction_time(Sys.time())
+})
+
+# ---------- Nettoyage ----------
+data_clean <- reactive({
+  df <- brvm_data()
+  df$`Variation (%)` <- as.numeric(
+    gsub(",", ".", gsub("%", "", df$`Variation (%)`))
   )
+  df
+})
+
+# ---------- TABLEAUX ----------
+output$table_all <- renderDT({
+  datatable(data_clean(), options = list(pageLength = 15, scrollX = TRUE))
+})
+
+output$table_up <- renderDT({
+  datatable(
+    data_clean()[order(-data_clean()$`Variation (%)`), ][1:10, ],
+    options = list(pageLength = 10)
+  )
+})
+
+output$table_down <- renderDT({
+  datatable(
+    data_clean()[order(data_clean()$`Variation (%)`), ][1:10, ],
+    options = list(pageLength = 10)
+  )
+})
+
+# ---------- GRAPHIQUES ----------
+output$plot_variation <- renderPlot({
+  df <- data_clean()
+  barplot(
+    df$`Variation (%)`,
+    names.arg = df$Libellé,
+    las = 2,
+    col = "steelblue",
+    main = "Variation journalière des actions (%)",
+    ylab = "Variation (%)",
+    cex.names = 0.6
+  )
+})
+
+output$plot_top_up <- renderPlot({
+  df <- data_clean()[order(-data_clean()$`Variation (%)`), ][1:10, ]
+  barplot(
+    df$`Variation (%)`,
+    names.arg = df$Libellé,
+    col = "darkgreen",
+    las = 2,
+    main = "Top 10 hausses (%)",
+    ylab = "Variation (%)"
+  )
+})
+
+output$plot_top_down <- renderPlot({
+  df <- data_clean()[order(data_clean()$`Variation (%)`), ][1:10, ]
+  barplot(
+    df$`Variation (%)`,
+    names.arg = df$Libellé,
+    col = "firebrick",
+    las = 2,
+    main = "Top 10 baisses (%)",
+    ylab = "Variation (%)"
+  )
+})
+
+output$plot_hist <- renderPlot({
+  hist(
+    data_clean()$`Variation (%)`,
+    breaks = 20,
+    col = "gray70",
+    border = "white",
+    main = "Distribution des variations journalières",
+    xlab = "Variation (%)"
+  )
+})
+
+# ---------- Téléchargement ----------
+output$downloadData <- downloadHandler(
+  filename = function() {
+    paste0("BRVM_actions_", Sys.Date(), ".csv")
+  },
+  content = function(file) {
+    write.csv(data_clean(), file, row.names = FALSE)
+  }
+)
 }
 
 ############################################################
